@@ -10,7 +10,7 @@
 
 ## About
 
-Npython is a repository of different short Python scripts.
+Npython is a repository of random short Python scripts.
 
 ## Ahrefs API
 

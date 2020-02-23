@@ -31,7 +31,6 @@ CLIENT_SECRET = 'CLIENT_SECRET'
 # oauth flow step 1
 def gsc_1():
 	# getting links to temporary tokens for GSC and GA
-
 	GA_SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
 
 	# Check https://developers.google.com/webmaster-tools/search-console-api-original/v3/ for all available scopes
@@ -49,7 +48,6 @@ def gsc_1():
 	authorize_url_ga = flow_ga.step1_get_authorize_url()
 
 	return (authorize_url_gsc, authorize_url_ga)
-
 
 # oauth flow step 2
 def gsc_2(gsc_property_uri, code_gsc, code_ga, start_date, end_date, ga_view_id):
@@ -72,10 +70,10 @@ def gsc_2(gsc_property_uri, code_gsc, code_ga, start_date, end_date, ga_view_id)
 	REDIRECT_URI = 'urn:ietf:wg:oauth:2.0:oob'
 	
 	# Defining the request made to GSC
-	gsc_request={
-			'startDate': start_date,
-			'endDate': end_date,
-			'dimensions': ['page']
+	gsc_request = {
+		'startDate': start_date,
+		'endDate': end_date,
+		'dimensions': ['page']
 		}
 
 	# passing the client ID, client secret, and scope to its constructor
@@ -90,11 +88,11 @@ def gsc_2(gsc_property_uri, code_gsc, code_ga, start_date, end_date, ga_view_id)
 	http_gsc = credentials_gsc.authorize(http)
 
 
-	webmasters_service = build('webmasters', 'v3', http=http, cache_discovery=False)
+	webmasters_service = build('webmasters', 'v3', http = http, cache_discovery = False)
 
 	# Retrieve list of properties in account
 	site_list = webmasters_service.searchanalytics().query(
-	 	siteUrl=gsc_property_uri, body=gsc_request).execute()
+	 	siteUrl = gsc_property_uri, body = gsc_request).execute()
 
 	# get the urls from the site_list
 	for gsc_keys in site_list.values():
@@ -121,7 +119,6 @@ def gsc_2(gsc_property_uri, code_gsc, code_ga, start_date, end_date, ga_view_id)
 	GA_CLIENT_SECRETS_PATH = '' # Path to client_secrets.json file.
 	GA_PROPERTY_URL = gsc_property_uri
 
-
 	# Function to initialize the SERVICE OBJECT
 	def initialize_analyticsreporting():
 		"""Initializes the analyticsreporting service object.
@@ -130,19 +127,17 @@ def gsc_2(gsc_property_uri, code_gsc, code_ga, start_date, end_date, ga_view_id)
 		analytics an authorized analyticsreporting service object.
 	  	"""
 		# Parse command-line arguments.
-		parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, 
-		parents=[tools.argparser])
+		parser = argparse.ArgumentParser(formatter_class = argparse.RawDescriptionHelpFormatter, 
+		parents = [tools.argparser])
 		flags = parser.parse_args([])
 		# Set up a Flow object to be used if we need to authenticate.
 		flow_ga = OAuth2WebServerFlow(CLIENT_ID, CLIENT_SECRET, GA_SCOPES, REDIRECT_URI)
-
 		credentials_ga = flow_ga.step2_exchange(code_ga)
 		http = httplib2.Http()
 		http_ga = credentials_ga.authorize(http)
 		
-
 	  	# Build the service object.
-		analytics = build('analytics', 'v4', http=http, discoveryServiceUrl=GA_DISCOVERY_URI, cache_discovery=False)
+		analytics = build('analytics', 'v4', http = http, discoveryServiceUrl = GA_DISCOVERY_URI, cache_discovery = False)
 
 		return analytics
 
@@ -163,9 +158,9 @@ def gsc_2(gsc_property_uri, code_gsc, code_ga, start_date, end_date, ga_view_id)
 	# PARSE and RETURN a list of urls 
 	def print_response(response):
 		
-		all_urls_analytics=[]
+		all_urls_analytics = []
 		for report in response.get('reports', []):
-			r={}
+			r = {}
 			columnHeader = report.get('columnHeader', {})
 			dimensionHeaders = columnHeader.get('dimensions', [])
 			metricHeaders = columnHeader.get('metricHeader', {}).get('metricHeaderEntries', [])
@@ -175,7 +170,6 @@ def gsc_2(gsc_property_uri, code_gsc, code_ga, start_date, end_date, ga_view_id)
 				dateRangeValues = row.get('metrics', [])
 
 				for header, dimension in zip(dimensionHeaders, dimensions):
-
 					header = 'Landing page URL'
 					dimension1 = re.sub("'|b'", "", dimension)
 					all_urls_analytics.append(dimension1)
@@ -186,9 +180,9 @@ def gsc_2(gsc_property_uri, code_gsc, code_ga, start_date, end_date, ga_view_id)
 
 	# Iterate throught the list of urls from GA and concatenate with the domain to get the absolute urls
 	for ga_url in (print_response(ga_response)):
-			ga_url=GA_PROPERTY_URL+ga_url
-			print('ga_url')
-			print(ga_url)
-			set_final.add(ga_url)
+		ga_url = GA_PROPERTY_URL + ga_url
+		print('ga_url')
+		print(ga_url)
+		set_final.add(ga_url)
 	# Returning the set prepared in the beginning with all the unique urls from databases.
 	return (set_final)
